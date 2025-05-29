@@ -1,13 +1,14 @@
-require("dotenv").config();
-const express = require("express");
-const { supabase } = require("./db");
+import dotenv from "dotenv";
+import express from "express";
+
 const app = express();
 const port = process.env.PORT || 3000;
+dotenv.config()
 
-app.get("/filmes", async (req, res) => {
-  let { data: titles, error } = await supabase.from("titles").select("*");
-
-  res.send(titles);
+app.post("/registrar", () => {
+  // Implement registration logic here
+  // This is a placeholder for the registration endpoint
+  res.send("Registration endpoint");
 });
 
 app.listen(port, () => {
