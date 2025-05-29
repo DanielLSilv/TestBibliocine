@@ -1,9 +1,13 @@
+require("dotenv").config();
 const express = require("express");
+const { supabase } = require("./db");
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3000;
 
-app.get("/filmes", (req, res) => {
-  res.send("Veja sua lista de filmes aqui!");
+app.get("/filmes", async (req, res) => {
+  let { data: titles, error } = await supabase.from("titles").select("*");
+
+  res.send(titles);
 });
 
 app.listen(port, () => {
