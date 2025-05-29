@@ -1,7 +1,10 @@
-// import { createClient } from "@supabase/supabase-js";
-// 
-// // Create a single supabase client for interacting with your database
-// // const url = process.env.SUPABASE_CLIENT_URL;
-// const public_anon_key = '';
-// 
-// export const supabase = createClient(url, public_anon_key);
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.SUPABASE_CLIENT_URL;
+const supabaseKey = process.env.SUPABASE_PUBLIC_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Supabase URL and Key are required.");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
