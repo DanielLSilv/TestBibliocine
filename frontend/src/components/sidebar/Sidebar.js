@@ -30,7 +30,7 @@ const Sidebar = ({ onNavigate, activePage }) => {
       
       {/* Sidebar */}
       <div className={`sidebar ${isMobileMenuOpen ? "open" : ""}`}>
-        <div className="logo">CINELIST</div>
+        <div className="logo">BIBLIOCINE</div>
         <nav>
           <ul>
             {menuItems.map((item) => (
