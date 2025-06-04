@@ -2,35 +2,42 @@ import "dotenv/config";
 import express from "express";
 import jwt from "jsonwebtoken";
 import { supabase } from "./db.js";
+import { v4 as uuidv4 } from "uuid"; // para gerar user_id único
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json()); // para ler JSON do body das requisições
+app.use(express.json()); // para ler JSON do body
 
 // ✅ Rota para criar conta
 app.post("/registrar", async (req, res) => {
-  const { email, senha } = req.body;
+  const { name, email, password, birthdate } = req.body;
 
-  if (!email || !senha) {
-    return res.status(400).json({ error: "Email e senha são obrigatórios." });
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: "Nome, email e senha são obrigatórios." });
   }
 
-  // Verifica se já existe usuário com o mesmo email
-  const { data: userExistente } = await supabase
+  // Verifica se já existe usuário com esse email
+  const { data: existingUser } = await supabase
     .from("users")
-    .select("id")
+    .select("user_id")
     .eq("email", email)
     .single();
 
-  if (userExistente) {
+  if (existingUser) {
     return res.status(409).json({ error: "Usuário já existe." });
   }
 
-  // Cria novo usuário
+  // Cria usuário com UUID como user_id
   const { data, error } = await supabase
     .from("users")
-    .insert([{ email, senha }])
+    .insert([{
+      user_id: uuidv4(),
+      name,
+      email,
+      password,
+      birthdate
+    }])
     .select()
     .single();
 
@@ -41,27 +48,25 @@ app.post("/registrar", async (req, res) => {
 
 // ✅ Rota para login
 app.post("/login", async (req, res) => {
-  const { email, senha } = req.body;
+  const { email, password } = req.body;
 
-  if (!email || !senha) {
+  if (!email || !password) {
     return res.status(400).json({ error: "Email e senha são obrigatórios." });
   }
 
-  // Busca usuário com email e senha informados
   const { data: user, error } = await supabase
     .from("users")
     .select("*")
     .eq("email", email)
-    .eq("senha", senha)
+    .eq("password", password)
     .single();
 
   if (error || !user) {
     return res.status(401).json({ error: "Email ou senha inválidos." });
   }
 
-  // Gera token JWT
   const token = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.user_id, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
@@ -69,7 +74,7 @@ app.post("/login", async (req, res) => {
   res.json({ message: "Login realizado com sucesso", token });
 });
 
-// ✅ Rota pública de exemplo
+// ✅ Rota pública
 app.get("/filmes", async (req, res) => {
   const { data, error } = await supabase.from("titles").select("*");
   if (error) return res.status(500).send(error);
